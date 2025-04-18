@@ -4,32 +4,32 @@ const sequelize = require("../database");
 const Business = sequelize.define(
   "businesses",
   {
-    bus_id: {
+    business_id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    bus_name: {
+    business_name: {
       type: DataTypes.STRING(40),
       allowNull: false,
     },
-    bus_address: {
+    business_address: {
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    bus_website: {
+    business_website: {
       type: DataTypes.STRING(40),
       allowNull: false,
     },
-    bus_tax: {
+    business_tax: {
       type: DataTypes.STRING(20),
       allowNull: false,
     },
-    bus_tel: {
+    business_tel: {
       type: DataTypes.STRING(15),
       allowNull: false,
     },
-    bus_logo: {
+    business_logo: {
       type: DataTypes.STRING,
       allowNull: true,
     },
@@ -100,7 +100,7 @@ const Customer = sequelize.define(
       type: DataTypes.STRING(40),
       allowNull: false,
     },
-    bus_id: {
+    business_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -142,7 +142,7 @@ const Quotation_sale = sequelize.define(
       type: DataTypes.DOUBLE,
       allowNull: false,
     },
-    bus_id: {
+    business_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -150,7 +150,7 @@ const Quotation_sale = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    employeeID: {
+    employee_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -341,7 +341,7 @@ const Company_person = sequelize.define(
       type: DataTypes.STRING(10),
       allowNull: false,
     },
-    bus_id: {
+    business_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },

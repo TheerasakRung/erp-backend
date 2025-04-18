@@ -4,42 +4,42 @@ const sequelize = require("../database");
 const User = sequelize.define(
   "users",
   {
-    userID: {
+    user_id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    userF_name: {
+    user_firstname: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    userL_name: {
+    user_lastname: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    userPhone: {
+    user_phone: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    userEmail: {
+    user_email: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    userPassword: {
+    user_password: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    RoleID: {
+    role_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    accessToken: {
+    access_token: {
       type: DataTypes.STRING,
     },
-    TokenCreate: {
+    token_creation_date: {
       type: DataTypes.STRING,
     },
-    bus_id: {
+    business_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -52,12 +52,12 @@ const User = sequelize.define(
 const Role = sequelize.define(
   "roles",
   {
-    RoleID: {
+    role_id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    RoleName: {
+    role_name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -109,6 +109,5 @@ const UserActivity = sequelize.define(
     timestamps: false,
   }
 );
-
 
 module.exports = { User, Role, UserActivity };
