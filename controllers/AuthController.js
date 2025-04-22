@@ -15,7 +15,7 @@ class AuthController {
 
   static getToken(req, res) {
     res.send(
-      TokenManager.getGenerateaccess_token({ username: req.params.username })
+      TokenManager.getGenerateAccessToken({ username: req.params.username })
     );
   }
   static checkAuthen(req, res) {
@@ -82,7 +82,7 @@ class AuthController {
               userRole: user.role.role_name,
             };
 
-            token = TokenManager.getGenerateaccess_token(payload);
+            token = TokenManager.getGenerateAccessToken(payload);
 
             // อัปเดต Token และเวลาที่สร้างในฐานข้อมูล
             await User.update(
@@ -316,12 +316,12 @@ class AuthController {
     console.log("req.body:", req.body); // ดูข้อมูลทั้งหมดที่ถูกส่งมาจาก frontend
 
     try {
-      if (!req.body.bus_name) {
+      if (!req.body.business_name) {
         return ResponseManager.ErrorResponse(
           req,
           res,
           400,
-          "bus_name is required"
+          "business_name is required"
         );
       }
       const existingUser = await User.findOne({
@@ -340,7 +340,7 @@ class AuthController {
 
       const existingBus = await Business.findOne({
         where: {
-          bus_name: req.body.bus_name,
+          business_name: req.body.business_name,
         },
       });
       if (existingBus) {
@@ -390,12 +390,12 @@ class AuthController {
       let createdBusiness = null;
       if (createbank) {
         createdBusiness = await Business.create({
-          bus_name: req.body.bus_name,
-          bus_address: req.body.bus_address,
-          bus_website: req.body.bus_website,
-          bus_tel: req.body.bus_tel,
-          bus_tax: req.body.bus_tax,
-          bus_logo: result.secure_url,
+          business_name: req.body.business_name,
+          business_address: req.body.business_address,
+          business_website: req.body.business_website,
+          business_tel: req.body.business_tel,
+          business_tax: req.body.business_tax,
+          business_logo: result.secure_url,
           bank_id: createbank.bank_id,
         });
         console.log("Business creation result:", createdBusiness);
