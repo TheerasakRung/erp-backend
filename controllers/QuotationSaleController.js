@@ -729,19 +729,17 @@ class QuotationSaleController {
             sale_id: req.params.id,
           });
 
-await Quotation_sale.update(
-  {
-    deleted_at: new Date().toISOString()
-  },
-  {
-    where: {
-      sale_id: req.params.id,
-      bus_id: bus_id,
-    },
-  }
-);
-      
-        
+          await Quotation_sale.update(
+            {
+              deleted_at: new Date().toISOString(),
+            },
+            {
+              where: {
+                sale_id: req.params.id,
+                bus_id: bus_id,
+              },
+            }
+          );
         }
       }
 
@@ -788,7 +786,6 @@ await Quotation_sale.update(
   }
   static async getQuotation(req, res) {
     try {
-  
       Quotation_sale.hasMany(Quotation_sale_detail, { foreignKey: "sale_id" });
       Quotation_sale_detail.belongsTo(Quotation_sale, {
         foreignKey: "sale_id",
@@ -808,8 +805,6 @@ await Quotation_sale.update(
 
       Quotation_sale.hasOne(Invoice, { foreignKey: "sale_id" });
       Invoice.belongsTo(Quotation_sale, { foreignKey: "sale_id" });
-
-
 
       const tokenData = await TokenManager.update_token(req);
       if (!tokenData) {
@@ -838,9 +833,9 @@ await Quotation_sale.update(
         order: [["sale_number", "ASC"]], // <-- เรียงจากน้อยไปมาก
       });
       const today = new Date();
-      console.log("-----------------------------------------")
-        console.log(quotationslist)
-        // return false
+      console.log("-----------------------------------------");
+      console.log(quotationslist);
+      // return false
 
       for (let log of quotationslist) {
         const expiredDate = new Date(log.credit_expired_date);
@@ -853,7 +848,6 @@ await Quotation_sale.update(
             { where: { sale_id: log.sale_id } }
           );
         }
-    
 
         result.push({
           sale_id: log.sale_id,
@@ -877,7 +871,7 @@ await Quotation_sale.update(
           discount_quotation: log.discount_quotation,
           vatType: log.vatType,
           vat: log.vat,
-          deleted_at:log.deleted_at,
+          deleted_at: log.deleted_at,
           // bank_id: log.bank_id,
           invoice:
             !log.invoice || log.status !== "Allowed"
@@ -964,7 +958,7 @@ from quotation_sale_details
           invoice_remark: sale.remark,
           vatType: sale.vatType,
           discount_quotation: sale.discount_quotation,
-          deleted_at:sale.invoice_deleted_at,
+          deleted_at: sale.invoice_deleted_at,
           billing:
             sale.invoice_status !== "Issue a receipt"
               ? "Pending"
@@ -1069,7 +1063,7 @@ from quotation_sale_details
           invoice_date: sale.invoice_date,
           invoice_remark: sale.remark,
           vatType: sale.vatType,
-          deleted_at:sale.tax_invoice_deleted_at,
+          deleted_at: sale.tax_invoice_deleted_at,
           discount_quotation: sale.discount_quotation,
           billing:
             sale.invoice_status !== "Issue a receipt"
@@ -1206,15 +1200,15 @@ from quotation_sale_details
           });
 
           await TaxInvoice.update(
-  {
-    deleted_at: new Date().toISOString()
-  },
-  {
-    where: {
-      invoice_id: req.params.id,
-    },
-  }
-);
+            {
+              deleted_at: new Date().toISOString(),
+            },
+            {
+              where: {
+                invoice_id: req.params.id,
+              },
+            }
+          );
         }
       }
 
@@ -1271,7 +1265,7 @@ from quotation_sale_details
         await Invoice.update(
           {
             invoice_status: "Pending",
-            deleted_at:""
+            deleted_at: "",
           },
           {
             where: {
@@ -1495,19 +1489,17 @@ from quotation_sale_details
             invoice_id: req.params.id,
             sale_id: Invoice_quotataion.sale_id,
           });
-          
-await Invoice.update(
-  {
-    deleted_at: new Date().toISOString()
-  },
-  {
-    where: {
-      invoice_id: req.params.id,
-    },
-  }
-);
 
-
+          await Invoice.update(
+            {
+              deleted_at: new Date().toISOString(),
+            },
+            {
+              where: {
+                invoice_id: req.params.id,
+              },
+            }
+          );
         }
       }
 
@@ -1701,7 +1693,7 @@ await Invoice.update(
         await Quotation_sale.update(
           {
             status: "Pending",
-            deleted_at:""
+            deleted_at: "",
           },
           {
             where: {
@@ -1791,7 +1783,7 @@ from quotation_sale_details
           payments: sale.payments,
           remark: sale.remark,
           vatType: sale.vatType,
-          deleted_at:sale.deleted_at,
+          deleted_at: sale.deleted_at,
           discount_quotation: sale.discount_quotation,
           billing:
             sale.invoice_status !== "Issue a receipt"
@@ -2042,7 +2034,7 @@ from quotation_sale_details
       });
 
       await TaxInvoice.update(
-        { tax_invoice_status: "Pending",deleted_at : "" },
+        { tax_invoice_status: "Pending", deleted_at: "" },
         {
           where: {
             invoice_id: req.params.id,
@@ -2527,6 +2519,193 @@ from quotation_sale_details
 
       return ResponseManager.SuccessResponse(req, res, 200, insert_cate);
     } catch (err) {
+      return ResponseManager.CatchResponse(req, res, err.message);
+    }
+  }
+
+  static async GetSaleReportByProductType(req, res) {
+    try {
+      const { bus_id } = req.userData;
+      const { startDate, endDate } = req.body; // รับ bus_id, startDate, และ endDate จาก req.body
+
+      const log = await sequelize.query(
+        `
+      SELECT 
+    CASE 
+        WHEN products."productTypeID" = 1 THEN 'สินค้า'
+        WHEN products."productTypeID" = 2 THEN 'บริการ'
+        ELSE 'Other'
+    END AS product_type,
+    SUM(quotation_sale_details."sale_price") AS total_sale_price
+FROM 
+    public.quotation_sale_details
+LEFT JOIN 
+    public.billings ON public.billings."sale_id" = public.quotation_sale_details."sale_id"
+LEFT JOIN 
+    public.products ON public.products."productID" = public.quotation_sale_details."productID"
+LEFT JOIN 
+    public.product_categories ON public.products."categoryID" = public.product_categories."categoryID"
+WHERE 
+    public.products."bus_id" = :bus_id
+    AND public.billings."billing_date"::date BETWEEN :startDate AND :endDate
+GROUP BY 
+    product_type;
+
+      `,
+        {
+          type: sequelize.QueryTypes.SELECT,
+          replacements: { bus_id, startDate, endDate }, // ส่ง bus_id ผ่าน replacements เพื่อป้องกัน SQL Injection
+        }
+      );
+
+      // ส่งผลลัพธ์กลับไปยัง client
+      return ResponseManager.SuccessResponse(req, res, 200, log);
+    } catch (err) {
+      // ส่งข้อผิดพลาดหากเกิดปัญหา
+      console.error("Error in GetSaleReportByProductType:", err);
+      return ResponseManager.CatchResponse(req, res, err.message);
+    }
+  }
+  static async GetSaleReportByCategory(req, res) {
+    try {
+      const { bus_id } = req.userData;
+      const { startDate, endDate } = req.body; // รับ bus_id, startDate, และ endDate จาก req.body
+
+      const log = await sequelize.query(
+        `
+SELECT 
+    public.product_categories."categoryName",
+    SUM(public.quotation_sale_details."sale_price") AS total_sale_price
+FROM 
+    public.quotation_sale_details
+LEFT JOIN 
+    public.billings ON public.billings."sale_id" = public.quotation_sale_details."sale_id"
+LEFT JOIN 
+    public.products ON public.products."productID" = public.quotation_sale_details."productID"
+LEFT JOIN 
+    public.product_categories ON public.products."categoryID" = public.product_categories."categoryID"
+WHERE 
+    public.products."bus_id" = :bus_id
+    AND public.billings."billing_date"::date BETWEEN :startDate AND :endDate
+GROUP BY 
+    public.product_categories."categoryName";
+
+      `,
+        {
+          type: sequelize.QueryTypes.SELECT,
+          replacements: { bus_id, startDate, endDate }, // ส่ง bus_id ผ่าน replacements เพื่อป้องกัน SQL Injection
+        }
+      );
+
+      // ส่งผลลัพธ์กลับไปยัง client
+      return ResponseManager.SuccessResponse(req, res, 200, log);
+    } catch (err) {
+      // ส่งข้อผิดพลาดหากเกิดปัญหา
+      console.error("Error in GetSaleReportByProductType:", err);
+      return ResponseManager.CatchResponse(req, res, err.message);
+    }
+  }
+  static async GetSaleReportByProdcutRank(req, res) {
+    try {
+      const { bus_id } = req.userData;
+      const { startDate, endDate } = req.body; // รับ bus_id, startDate, และ endDate จาก req.body
+
+      const log = await sequelize.query(
+        `
+WITH RankedProducts AS (
+    SELECT 
+        public.products."productname",
+        SUM(public.quotation_sale_details."sale_price") AS total_sale_price,
+        ROW_NUMBER() OVER (ORDER BY SUM(public.quotation_sale_details."sale_price") DESC) AS rank
+    FROM 
+        public.quotation_sale_details
+    LEFT JOIN 
+        public.billings ON public.billings."sale_id" = public.quotation_sale_details."sale_id"
+    LEFT JOIN 
+        public.products ON public.products."productID" = public.quotation_sale_details."productID"
+    WHERE 
+        public.products."bus_id" = :bus_id
+        AND public.products."productTypeID" != 2
+           AND public.billings."billing_date"::date BETWEEN :startDate AND :endDate
+    GROUP BY 
+        public.products."productname"
+),
+AggregatedProducts AS (
+    SELECT 
+        CASE 
+            WHEN rank <= 7 THEN "productname"
+            ELSE 'Others'
+        END AS product,
+        SUM(total_sale_price) AS total_sale_price
+    FROM RankedProducts
+    GROUP BY 
+        CASE 
+            WHEN rank <= 7 THEN "productname"
+            ELSE 'Others'
+        END
+)
+SELECT 
+    product,
+    total_sale_price
+FROM 
+    AggregatedProducts
+ORDER BY 
+    total_sale_price DESC;
+
+
+      `,
+        {
+          type: sequelize.QueryTypes.SELECT,
+          replacements: { bus_id, startDate, endDate }, // ส่ง bus_id ผ่าน replacements เพื่อป้องกัน SQL Injection
+        }
+      );
+
+      // ส่งผลลัพธ์กลับไปยัง client
+      return ResponseManager.SuccessResponse(req, res, 200, log);
+    } catch (err) {
+      // ส่งข้อผิดพลาดหากเกิดปัญหา
+      console.error("Error in GetSaleReportByProductType:", err);
+      return ResponseManager.CatchResponse(req, res, err.message);
+    }
+  }
+  static async GetSaleReportByService(req, res) {
+    try {
+      const { bus_id } = req.userData;
+      const { startDate, endDate } = req.body; // รับ bus_id, startDate, และ endDate จาก req.body
+
+      const log = await sequelize.query(
+        `
+SELECT 
+    public.products.productname AS product_name,
+    SUM(public.quotation_sale_details."sale_price") AS total_sale_price
+FROM 
+    public.quotation_sale_details
+LEFT JOIN 
+    public.billings ON public.billings."sale_id" = public.quotation_sale_details."sale_id"
+LEFT JOIN 
+    public.products ON public.products."productID" = public.quotation_sale_details."productID"
+WHERE 
+    public.products."bus_id" = :bus_id
+    AND public.products."productTypeID" = 2
+    AND public.billings."billing_date"::date BETWEEN :startDate AND :endDate
+	GROUP BY 
+    public.products."productname"
+ORDER BY 
+    total_sale_price DESC;
+
+
+      `,
+        {
+          type: sequelize.QueryTypes.SELECT,
+          replacements: { bus_id, startDate, endDate }, // ส่ง bus_id ผ่าน replacements เพื่อป้องกัน SQL Injection
+        }
+      );
+
+      // ส่งผลลัพธ์กลับไปยัง client
+      return ResponseManager.SuccessResponse(req, res, 200, log);
+    } catch (err) {
+      // ส่งข้อผิดพลาดหากเกิดปัญหา
+      console.error("Error in GetSaleReportByProductType:", err);
       return ResponseManager.CatchResponse(req, res, err.message);
     }
   }
